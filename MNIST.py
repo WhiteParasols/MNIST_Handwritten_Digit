@@ -7,7 +7,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 
-# 1. MNIST dataset import
+# 1. Import MNIST dataset
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
 x = np.concatenate((x_train, x_test))
 y = np.concatenate((y_train, y_test))
@@ -17,17 +17,17 @@ print('x_train shape:{0}, y_train shape:{1}'.format(x_train.shape, y_train.shape
 print('x_test shape:{0}, y_test shape:{1}'.format(x_test.shape, y_test.shape))
 
 # 2. Data pre-processing
-x_train = x_train.reshape(56000, 784)
+x_train = x_train.reshape(56000, 784) # 28x28 -> 1x784
 x_test = x_test.reshape(14000, 784)
-x_train = x_train.astype('float32')
+x_train = x_train.astype('float32') # integer type -> float type to divide by 255
 x_test = x_test.astype('float32')
-x_train /= 255
+x_train /= 255 # black = 0, white = 255 -> 0-1 scale
 x_test /= 255
-print('x_train shape:{0}, x_test shape:{1}'.format(x_train.shape, x_test.shape))
+print('x_train matrix shape:{0}, x_test matrix shape:{1}'.format(x_train.shape, x_test.shape))
 
 # 3. Model Construction
-model = Sequential()
-model.add(Dense(512, input_shape=(784,)))
+model = Sequential() # sequential modeling
+model.add(Dense(512, input_shape=(784,))) # Dense - fully connected layer
 model.add(Activation('relu'))
 model.add(Dense(256))
 model.add(Activation('relu'))
@@ -36,28 +36,27 @@ model.add(Activation('softmax'))
 model.summary()
 
 # 4. Model Compile
-model.compile(optimizer='adam',
-              loss='sparse_categorical_crossentropy',
+model.compile(optimizer='adam', loss='sparse_categorical_crossentropy',
               metrics=['accuracy'])
 
 # 5. Model training
-loss, accuracy = [], []
-for i in range(5):
-    model.fit(x_train, y_train, batch_size=128, epochs=1, verbose=1)
-    loss.append(model.evaluate(x_test, y_test)[0])
-    accuracy.append(model.evaluate(x_test, y_test)[1])
+hist = model.fit(x_train, y_train, epochs=5, batch_size=128, validation_data=(x_test,y_test), verbose=1)
 
-fig, ax1 = plt.subplots()
-ax1.set_xlabel('epoch')
-ax1.set_ylabel('Accuracy')
-ax1.plot(accuracy, color='green', label='Accuracy')
+fig, loss_ax = plt.subplots()
 
-ax2 = ax1.twinx()
-ax2.set_ylabel('Loss')
-ax2.plot(loss, color='red', label='Loss')
-ax1.legend(loc='center right')
-ax2.legend(loc='center left')
+acc_ax = loss_ax.twinx()
+plt.xticks(range(5), range(1,6))
+loss_ax.plot(hist.history['loss'],'y',label='train loss')
+loss_ax.plot(hist.history['val_loss'],'r',label='val loss')
+acc_ax.plot(hist.history['accuracy'],'b',label='train acc')
+acc_ax.plot(hist.history['val_accuracy'],'g',label='val acc')
 
+loss_ax.set_xlabel('epoch')
+loss_ax.set_ylabel('loss')
+acc_ax.set_ylabel('accuracy')
+
+loss_ax.legend(loc='upper left')
+acc_ax.legend(loc='lower left')
 plt.show()
 
 # 6. Accuracy assessment
