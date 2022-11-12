@@ -78,7 +78,8 @@ class MyApp(QMainWindow, form_window):
             for i in range(28):
                 for j in range(28):
                     arr[j, i] = 1 - self.image.scaled(28, 28).pixelColor(i, j).getRgb()[0] / 255.0
-            arr = arr.reshape(-1,784)
+            # arr = arr.reshape(-1,784) # for MNIST.py (3 fully connected layers)
+            arr = arr.reshape(-1, 28, 28) # for MNIST_CNN.py (convolutional layers)
 
             if self.loaded_model:
                 pred = self.loaded_model.predict(arr)[0]
